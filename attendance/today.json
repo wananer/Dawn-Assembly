@@ -30,6 +30,16 @@
         "timestamp": 1774849269965,
         "note": "测试打卡"
       }
+    ],
+    "hubu": [
+      {
+        "departmentId": "hubu",
+        "departmentName": "户部",
+        "memberName": "户部尚书",
+        "time": "13:41:16",
+        "timestamp": 1774849276406,
+        "note": "测试打卡"
+      }
     ]
   }
 }
