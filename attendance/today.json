@@ -10,6 +10,16 @@
         "timestamp": 1774849162472,
         "note": "测试打卡"
       }
+    ],
+    "menxia": [
+      {
+        "departmentId": "menxia",
+        "departmentName": "门下省",
+        "memberName": "侍中",
+        "time": "13:39:48",
+        "timestamp": 1774849188752,
+        "note": "测试打卡"
+      }
     ]
   }
 }
