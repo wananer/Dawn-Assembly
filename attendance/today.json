@@ -20,6 +20,16 @@
         "timestamp": 1774849188752,
         "note": "测试打卡"
       }
+    ],
+    "shangshu": [
+      {
+        "departmentId": "shangshu",
+        "departmentName": "尚书省",
+        "memberName": "尚书令",
+        "time": "13:41:09",
+        "timestamp": 1774849269965,
+        "note": "测试打卡"
+      }
     ]
   }
 }
