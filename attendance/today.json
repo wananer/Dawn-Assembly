@@ -80,6 +80,16 @@
         "timestamp": 1774849316559,
         "note": "测试打卡"
       }
+    ],
+    "libu_hr": [
+      {
+        "departmentId": "libu_hr",
+        "departmentName": "吏部HR",
+        "memberName": "吏部HR主管",
+        "time": "13:42:02",
+        "timestamp": 1774849322886,
+        "note": "测试打卡"
+      }
     ]
   }
 }
