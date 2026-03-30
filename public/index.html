@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>早朝打卡 - 三省六部每日晨会签到系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { text-align: center; color: white; padding: 40px 0; }
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .current-date { background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 20px; display: inline-block; margin-top: 15px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2.5rem; font-weight: bold; color: #667eea; }
+        .dept-card { background: white; border-radius: 10px; padding: 20px; border-left: 4px solid; margin-bottom: 15px; }
+        .dept-status { padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; }
+        .dept-status.checked { background: #d4edda; color: #155724; }
+        .dept-status.pending { background: #fff3cd; color: #856404; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; }
+        .charts-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 30px; }
+        .chart-container { background: white; border-radius: 12px; padding: 24px; }
+        .checkin-form { background: white; border-radius: 12px; padding: 24px; margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .message { padding: 12px; border-radius: 6px; margin-top: 15px; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌅 早朝打卡</h1>
+            <p>三省六部每日晨会签到系统</p>
+            <div class="current-date" id="currentDate"></div>
+        </header>
+        
+        <div class="checkin-form">
+            <h2>📋 今日打卡</h2>
+            <form id="checkinForm">
+                <div class="form-group">
+                    <label>选择部门</label>
+                    <select id="department" required><option value="">请选择部门</option></select>
+                </div>
+                <div class="form-group">
+                    <label>您的姓名</label>
+                    <input type="text" id="memberName" placeholder="请输入您的姓名" required>
+                </div>
+                <div class="form-group">
+                    <label>备注（可选）</label>
+                    <textarea id="note" rows="2" placeholder="如有特殊情况请备注"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">✅ 立即打卡</button>
+                <div id="message" class="message"></div>
+            </form>
+        </div>
+        
+        <div class="dashboard" id="statsDashboard"></div>
+        
+        <div class="card">
+            <h2>🏛️ 各部门今日打卡情况</h2>
+            <div id="departmentsList"></div>
+        </div>
+        
+        <div class="charts-section">
+            <div class="chart-container">
+                <h2>📊 今日打卡统计</h2>
+                <canvas id="todayChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h2>📈 近7天打卡趋势</h2>
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '';
+        let departments = [];
+        let todayChart, trendChart;
+        
+        async function init() {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('zh-CN', { 
+                year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
+            });
+            await loadDepartments();
+            await loadTodayStats();
+            await loadHistory();
+        }
+        
+        async function loadDepartments() {
+            const res = await fetch(`${API_BASE}/api/departments`);
+            const data = await res.json();
+            departments = data.departments;
+            const select = document.getElementById('department');
+            departments.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d.id;
+                option.textContent = d.name;
+                select.appendChild(option);
+            });
+        }
+        
+        async function loadTodayStats() {
+            const res = await fetch(`${API_BASE}/api/today`);
+            const data = await res.json();
+            renderStats(data);
+            renderDepartments(data.stats);
+            renderTodayChart(data.stats);
+        }
+        
+        function renderStats(data) {
+            const dashboard = document.getElementById('statsDashboard');
+            dashboard.innerHTML = `
+                <div class="card"><div class="stat-number">${data.totalDepartments}</div><div>总部门数</div></div>
+                <div class="card"><div class="stat-number">${data.checkedInDepartments}</div><div>已打卡部门</div></div>
+                <div class="card"><div class="stat-number">${data.totalCheckIns}</div><div>今日打卡人数</div></div>
+                <div class="card"><div class="stat-number">${Math.round(data.checkedInDepartments/data.totalDepartments*100)}%</div><div>打卡率</div></div>
+            `;
+        }
+        
+        function renderDepartments(stats) {
+            const container = document.getElementById('departmentsList');
+            container.innerHTML = stats.map(dept => `
+                <div class="dept-card" style="border-left-color: ${dept.color}">
+                    <h3>${dept.name} <span class="dept-status ${dept.checkedIn > 0 ? 'checked' : 'pending'}">${dept.checkedIn > 0 ? '已打卡' : '未打卡'}</span></h3>
+                    <div>打卡人数: ${dept.checkedIn}</div>
+                    ${dept.members.length > 0 ? `<div>${dept.members.map(m => `<div>${m.name} ${m.time}</div>`).join('')}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        function renderTodayChart(stats) {
+            const ctx = document.getElementById('todayChart').getContext('2d');
+            if (todayChart) todayChart.destroy();
+            todayChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: stats.map(d => d.name),
+                    datasets: [{ data: stats.map(d => d.checkedIn), backgroundColor: stats.map(d => d.color) }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+        
+        async function loadHistory() {
+            const res = await fetch(`${API_BASE}/api/history?days=7`);
+            const data = await res.json();
+            renderTrendChart(data.history);
+        }
+        
+        function renderTrendChart(history) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (trendChart) trendChart.destroy();
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: history.map(h => h.date.slice(5)),
+                    datasets: [{
+                        label: '每日打卡总数',
+                        data: history.map(h => h.total),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+        }
+        
+        document.getElementById('checkinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgDiv = document.getElementById('message');
+            msgDiv.className = 'message';
+            msgDiv.style.display = 'none';
+            
+            const res = await fetch(`${API_BASE}/api/checkin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    departmentId: document.getElementById('department').value,
+                    memberName: document.getElementById('memberName').value,
+                    note: document.getElementById('note').value
+                })
+            });
+            const data = await res.json();
+            msgDiv.textContent = data.message;
+            msgDiv.className = `message ${data.success ? 'success' : 'error'}`;
+            if (data.success) {
+                document.getElementById('checkinForm').reset();
+                await loadTodayStats();
+            }
+        });
+        
+        init();
+    </script>
+</body>
+</html>
