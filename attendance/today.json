@@ -60,6 +60,16 @@
         "timestamp": 1774849289230,
         "note": "测试打卡"
       }
+    ],
+    "xingbu": [
+      {
+        "departmentId": "xingbu",
+        "departmentName": "刑部",
+        "memberName": "刑部尚书",
+        "time": "13:41:35",
+        "timestamp": 1774849295467,
+        "note": "测试打卡"
+      }
     ]
   }
 }
