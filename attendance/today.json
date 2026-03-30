@@ -70,6 +70,16 @@
         "timestamp": 1774849295467,
         "note": "测试打卡"
       }
+    ],
+    "gongbu": [
+      {
+        "departmentId": "gongbu",
+        "departmentName": "工部",
+        "memberName": "工部尚书",
+        "time": "13:41:56",
+        "timestamp": 1774849316559,
+        "note": "测试打卡"
+      }
     ]
   }
 }
