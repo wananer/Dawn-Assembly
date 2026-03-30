@@ -40,6 +40,16 @@
         "timestamp": 1774849276406,
         "note": "测试打卡"
       }
+    ],
+    "libu": [
+      {
+        "departmentId": "libu",
+        "departmentName": "吏部",
+        "memberName": "吏部尚书",
+        "time": "13:41:23",
+        "timestamp": 1774849283686,
+        "note": "测试打卡"
+      }
     ]
   }
 }
