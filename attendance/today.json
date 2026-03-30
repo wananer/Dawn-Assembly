@@ -50,6 +50,16 @@
         "timestamp": 1774849283686,
         "note": "测试打卡"
       }
+    ],
+    "bingbu": [
+      {
+        "departmentId": "bingbu",
+        "departmentName": "兵部",
+        "memberName": "兵部尚书",
+        "time": "13:41:29",
+        "timestamp": 1774849289230,
+        "note": "测试打卡"
+      }
     ]
   }
 }
